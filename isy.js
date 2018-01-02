@@ -507,6 +507,16 @@ ISY.prototype.initialize = function (initializeCompleted) {
       this.logger('ISY-JS: Error:' + result.message)
       throw new Error('Unable to contact the ISY to get the list of nodes')
     } else {
+      this.webSocket = null
+      this.nodesLoaded = false
+      this.deviceIndex = {}
+      this.deviceList = []
+      this.sceneList = []
+      this.sceneIndex = {}
+      this.variableList = []
+      this.variableIndex = {}
+      this.zoneMap = {}
+
       that.loadNodes(result)
 
       that.loadVariables(that.VARIABLE_TYPE_INTEGER, function () {
@@ -611,12 +621,15 @@ ISY.prototype.initializeWebSocket = function () {
   var that = this
   var auth = 'Basic ' + Buffer.from(this.userName + ':' + this.password).toString('base64')
 
+  this.logger('Initializing web socket')
+
   this.webSocket = new WebSocket.Client(
     'ws://' + this.address + '/rest/subscribe', ['ISYSUB'], {
       headers: {
         'Origin': 'com.universal-devices.websockets.isy',
         'Authorization': auth
-      }
+      },
+      'ping': 10
     })
 
   this.lastActivity = new Date()
